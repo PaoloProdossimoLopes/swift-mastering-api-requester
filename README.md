@@ -10,7 +10,7 @@
  -->
 
 <!-- PROJECT NAME -->
-#  REPOSITORY TEMPLATE
+#  Mastering API Requester
 
 <!-- DESCRIPTION -->
 This project are created for using as template for others repository.
