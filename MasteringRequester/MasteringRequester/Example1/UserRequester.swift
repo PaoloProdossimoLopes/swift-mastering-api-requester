@@ -12,7 +12,7 @@ protocol UserRequesterProtocol: Requester {
     func fetchUserWithReturn() async -> Result<[UserResponseModel], RequesterErrors>
 }
 
-final class UserRequester: NSObject, UserRequesterProtocol {
+final class UserRequester: UserRequesterProtocol {
     
     typealias UserAPIResultExpect = Result<[UserResponseModel], RequesterErrors>
     
@@ -28,3 +28,4 @@ final class UserRequester: NSObject, UserRequesterProtocol {
         return await executeRequest(endpoint: endpoint)
     }
 }
+

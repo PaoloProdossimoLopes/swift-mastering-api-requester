@@ -106,6 +106,7 @@
 		B1E648F827F7341000A56341 /* Requesters */ = {
 			isa = PBXGroup;
 			children = (
+				B1E648EF27F716C600A56341 /* Endpoint.swift */,
 				B1E648F327F71B7100A56341 /* RequesterWithCompletionBlock.swift */,
 				B1E648F927F7343500A56341 /* RequesterWithAsyncReturn.swift */,
 				B1E648FB27F7349300A56341 /* Requester.swift */,
@@ -117,7 +118,6 @@
 			isa = PBXGroup;
 			children = (
 				B1E648ED27F7148600A56341 /* HTTPMetod.swift */,
-				B1E648EF27F716C600A56341 /* Endpoint.swift */,
 				B1E648F127F7189700A56341 /* RequesterErrors.swift */,
 				B1E648F627F733C400A56341 /* StatusCodeRanges.swift */,
 			);

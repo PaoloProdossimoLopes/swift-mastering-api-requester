@@ -44,6 +44,8 @@ private extension RequesterWithAsyncReturn {
         
         var request = URLRequest(url: url)
         request.httpMethod = endpoint.method.rawValue
+        request.timeoutInterval = endpoint.timeout
+        request.cachePolicy = endpoint.cachePolicy
         
         if let header = endpoint.header {
             request.allHTTPHeaderFields = header
