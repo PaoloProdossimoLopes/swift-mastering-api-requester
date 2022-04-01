@@ -8,31 +8,34 @@
 
 import Foundation
 
-protocol Requester {
+protocol RequesterWithCompletionBlock {
     func executeRequest<E: Decodable>(
-        endpoint: Endpoint, expect: E.Type
-    ) async -> Result<E, RequesterErrors>
-    
-    func executeRequest<E: Decodable>(
-        endpoint: Endpoint, expect: E.Type,
+        endpoint: Endpoint,
         completionHandler: @escaping ((Result<E, RequesterErrors>) -> Void)
     )
 }
 
-extension Requester {
+//MARK: - Default implementations
+extension RequesterWithCompletionBlock {
     
     func executeRequest<E: Decodable>(
-        endpoint: Endpoint, expect: E.Type,
+        endpoint: Endpoint,
         completionHandler: @escaping ((Result<E, RequesterErrors>) -> Void)
     ) {
-        
-        guard let urlRequest = makeURLRequester(endpoint, completionHandler: completionHandler)
-        else { return }
+        guard let urlRequest = makeURLRequester(
+            endpoint, completionHandler: completionHandler
+        ) else { return }
         
         performAPI(urlRequest: urlRequest, completionHandler: completionHandler)
     }
-    
-    private func makeURLRequester<E: Decodable>(_ endpoint: Endpoint, completionHandler: @escaping ((Result<E, RequesterErrors>) -> Void)) -> URLRequest? {
+}
+
+//MARK: - Helpers
+private extension RequesterWithCompletionBlock {
+    func makeURLRequester<E: Decodable>(
+        _ endpoint: Endpoint,
+        completionHandler: @escaping ((Result<E, RequesterErrors>) -> Void)
+    ) -> URLRequest? {
         
         let fullURLString = endpoint.fullURLString
         
@@ -55,7 +58,7 @@ extension Requester {
         return request
     }
     
-    private func performAPI<E: Decodable>(
+    func performAPI<E: Decodable>(
         urlRequest: URLRequest,
         completionHandler: @escaping ((Result<E, RequesterErrors>) -> Void)
     ) {
@@ -71,6 +74,9 @@ extension Requester {
                 return
             }
             
+            let json = String(data: data, encoding: .utf8)!
+            print(json)
+            
             handleStatusCode(
                 response: response, data: data,
                 completionHandler: completionHandler
@@ -80,32 +86,30 @@ extension Requester {
         task.resume()
     }
     
-    private func decodeJSON<EXPECTED: Decodable>(
-        data: Data, response: HTTPURLResponse, expect: EXPECTED.Type,
-        completionHandler: @escaping ((Result<EXPECTED, RequesterErrors>) -> Void)
-    ) {
-        do {
-            let decodedResponse = try JSONDecoder().decode(EXPECTED.self, from: data)
-            completionHandler(.success(decodedResponse))
-        } catch {
-            completionHandler(.failure(.decode(nil)))
-        }
-    }
-    
-    private func handleStatusCode<EXPECTED: Decodable>(
+    func handleStatusCode<E: Decodable>(
         response: HTTPURLResponse, data: Data,
-        completionHandler: @escaping ((Result<EXPECTED, RequesterErrors>) -> Void)
+        completionHandler: @escaping ((Result<E, RequesterErrors>) -> Void)
     ) {
         switch response.statusCode {
-        case 200...299:
-            decodeJSON(
-                data: data, response: response, expect: EXPECTED.self,
-                completionHandler: completionHandler
-            )
-        case 401:
+        case StatusCodeRanges.succesRange.range:
+            decodeJSON(data: data, response: response, completionHandler: completionHandler)
+        case StatusCodeRanges.unauthorized.range:
             completionHandler(.failure(.unauthorized))
         default:
             completionHandler(.failure(.unexpectedStatusCode(response.statusCode)))
         }
     }
+    
+    func decodeJSON<E: Decodable>(
+        data: Data, response: HTTPURLResponse,
+        completionHandler: @escaping ((Result<E, RequesterErrors>) -> Void)
+    ) {
+        do {
+            let decodedResponse = try JSONDecoder().decode(E.self, from: data)
+            completionHandler(.success(decodedResponse))
+        } catch {
+            completionHandler(.failure(.decode(nil)))
+        }
+    }
+
 }

@@ -15,6 +15,7 @@ enum RequesterErrors: Error {
     case noData
 }
 
+//MARK: - Computed properties
 extension RequesterErrors {
     var describeError: String {
         switch self {
